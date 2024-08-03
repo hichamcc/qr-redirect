@@ -30,7 +30,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Redirect URL</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Test QR Code</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden">Test QR Code</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
@@ -45,7 +45,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         {!! QrCode::size(100)->generate(route('qr.redirect', ['code' => $link->code])) !!}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap hidden">
                                         <button type="button" onclick="openEditModal('{{ $link->id }}', '{{ $link->redirect_url }}')" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-1 mr-2  dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
                                             Edit URL
                                         </button>
@@ -179,7 +179,7 @@
         }
 
         $(document).on('click' , '#close-edit' , function(){
-            
+
             // perform click esc by js code
             document.querySelector('#editUrlModal').click();
 
@@ -190,10 +190,10 @@
             e.preventDefault();
             const generateButton = document.getElementById('generate-button');
             const loadingSpinner = document.getElementById('loading-spinner');
-            
+
             generateButton.classList.add('hidden');
             loadingSpinner.classList.remove('hidden');
-            
+
             fetch('{{ route("links.generate") }}', {
                 method: 'POST',
                 body: new FormData(this),
