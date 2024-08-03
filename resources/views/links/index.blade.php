@@ -42,10 +42,10 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">{{ $link->created_at->format('Y-m-d H:i') }}</div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap hidden">
                                         {!! QrCode::size(100)->generate(route('qr.redirect', ['code' => $link->code])) !!}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap hidden">
+                                    <td class="px-6 py-4 whitespace-nowrap ">
                                         <button type="button" onclick="openEditModal('{{ $link->id }}', '{{ $link->redirect_url }}')" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-1 mr-2  dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
                                             Edit URL
                                         </button>
