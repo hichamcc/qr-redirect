@@ -63,8 +63,15 @@
                                         <input type="checkbox" name="selected[]" value="{{ $link->id }}" class="form-checkbox h-5 w-5 text-blue-600 row-checkbox">
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $link->code }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $link->redirect_url ?? 'Not set' }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($link->redirect_url)
+                                            <a href="{{ $link->redirect_url }}" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline" title="{{ $link->redirect_url }}">
+                                                {{ \Illuminate\Support\Str::limit($link->redirect_url, 100) }}
+                                            </a>
+                                        @else
+                                            <span class="text-gray-500">Not set</span>
+                                        @endif
+                                    </td>                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">{{ $link->created_at->format('Y-m-d H:i') }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap hidden">
