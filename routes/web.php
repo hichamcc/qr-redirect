@@ -20,8 +20,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/links', [LinkController::class, 'index'])->name('links.index');
     Route::post('/links/generate', [LinkController::class, 'generate'])->name('links.generate');
+    Route::post('/links/bulk-update', [LinkController::class, 'bulkUpdate'])->name('links.bulk-update');
     Route::patch('/links/{link}/update-url', [LinkController::class, 'updateRedirectUrl'])->name('links.update-url');
     Route::get('/links/download-csv/{fileName}', [LinkController::class, 'downloadCsv'])->name('links.download-csv');
+    Route::get('/generate-qr/{code}', [LinkController::class, 'generateqr'])->name('generate.qr');
+
 
     Route::get('/csv-exports', [LinkController::class, 'csvIndex'])->name('csv.index');
 });

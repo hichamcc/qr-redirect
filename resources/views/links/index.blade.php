@@ -13,20 +13,42 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
                     <div class="flex justify-between mb-4">
-                        <form action="{{ route('links.index') }}" method="GET" class="flex gap-2 items-center">
-                            <input type="text" name="search" id="search" placeholder="Search by code" class="border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm">
-                            <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
-                                Search
-                            </button>
+                        <form action="{{ route('links.index') }}" method="GET" class="flex flex-col gap-2 items-start">
+                            <textarea
+                                name="search"
+                                id="search"
+                                placeholder="Enter codes to search (one per line)"
+                                class="w-full h-24 border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
+                            ></textarea>
+                            <div class="flex gap-2">
+                                <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                    Search
+                                </button>
+                                <button type="button" onclick="clearSearch()" class="text-gray-700 bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 focus:outline-none">
+                                    Clear
+                                </button>
+                            </div>
                         </form>
-                        <button type="button" data-modal-target="generateLinksModal" data-modal-toggle="generateLinksModal" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
-                            Generate Links
-                        </button>
+                        <div>
+                            <button type="button" data-modal-target="generateLinksModal" data-modal-toggle="generateLinksModal" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                Generate Links
+                            </button>
+                        </div>
+
                     </div>
+                    <form id="bulk-update-form" method="POST" action="{{ route('links.bulk-update') }}">
+                        @csrf
+                        <div id="bulk-update-controls" class="mt-4 hidden">
+                            <input type="text" name="bulk_redirect_url" placeholder="Enter new URL for selected items" class="border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm mr-2 w-1/2">
+                            <button type="button" onclick="bulkUpdate()" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                Update Selected
+                            </button>
+                        </div>
 
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
+                                <th></th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Redirect URL</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
@@ -37,6 +59,9 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach ($links as $link)
                                 <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox" name="selected[]" value="{{ $link->id }}" class="form-checkbox h-5 w-5 text-blue-600 row-checkbox">
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $link->code }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $link->redirect_url ?? 'Not set' }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -49,15 +74,48 @@
                                         <button type="button" onclick="openEditModal('{{ $link->id }}', '{{ $link->redirect_url }}')" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-1 mr-2  dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
                                             Edit URL
                                         </button>
+
+                                        <button type="button" onclick="showQRCode('{{ $link->code }}')" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-1 dark:bg-green-600 dark:hover:bg-green-700 focus:outline-none dark:focus:ring-green-800">
+                                            Show QR
+                                        </button>
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
+                    </form>
 
                     <div class="mt-4">
                         {{ $links->links() }}
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- QR Code Modal -->
+    <div id="qrModal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                QR Code
+                            </h3>
+                            <div class="mt-2" id="qrCodeContainer">
+                                <!-- QR code will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" onclick="closeQRModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Close
+                    </button>
                 </div>
             </div>
         </div>
@@ -139,10 +197,65 @@
 
     // add value get search to #search
     $(document).ready(function() {
-        $('#search').val('{{ request()->search }}');
+        var $bulkUpdateControls = $('#bulk-update-controls');
+
+        function updateBulkControls() {
+            var checkedBoxes = $('.row-checkbox:checked').length;
+            $bulkUpdateControls.toggleClass('hidden', checkedBoxes === 0);
+        }
+
+        $('.row-checkbox').on('change', updateBulkControls);
+
+        // Initialize the bulk update controls visibility
+        updateBulkControls();
+
+        // Populate search input if there's a previous search query
+        $('#search').val({!! json_encode(request()->search) !!});
     });
 
-       function showAlert(message, type) {
+
+
+    function showQRCode(code) {
+        const qrCodeContainer = document.getElementById('qrCodeContainer');
+        qrCodeContainer.innerHTML = '<div class="text-center">Loading QR Code...</div>';
+        document.getElementById('qrModal').classList.remove('hidden');
+
+        fetch(`/generate-qr/${code}`)
+            .then(response => response.text())
+            .then(data => {
+                qrCodeContainer.innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                qrCodeContainer.innerHTML = '<div class="text-red-500">Error loading QR Code</div>';
+            });
+    }
+
+    function closeQRModal() {
+        document.getElementById('qrModal').classList.add('hidden');
+    }
+
+    function bulkUpdate() {
+        var form = document.getElementById('bulk-update-form');
+        var selected = form.querySelectorAll('input[name="selected[]"]:checked');
+
+        if (selected.length === 0) {
+            alert('Please select at least one item to update.');
+            return;
+        }
+
+        var newUrl = form.elements['bulk_redirect_url'].value.trim();
+        if (!newUrl) {
+            alert('Please enter a new URL for the selected items.');
+            return;
+        }
+
+        form.submit();
+
+    }
+
+
+    function showAlert(message, type) {
             const alertContainer = document.getElementById('alert-container');
             const alertHTML = `
                 <div id="alert-${type}" class="flex p-4 mb-4 text-${type}-800 rounded-lg bg-${type}-50 dark:bg-gray-800 dark:text-${type}-400" role="alert">
@@ -194,7 +307,7 @@
             generateButton.classList.add('hidden');
             loadingSpinner.classList.remove('hidden');
 
-            fetch('{{ route("links.generate") }}', {
+            fetch('/links/generate', {
                 method: 'POST',
                 body: new FormData(this),
                 headers: {
@@ -265,6 +378,11 @@
                 showErrorAlert('An error occurred while updating the URL.');
             });
         });
+
+    function clearSearch() {
+        document.getElementById('search').value = '';
+    }
+
 </script>
 @endpush
 </x-app-layout>

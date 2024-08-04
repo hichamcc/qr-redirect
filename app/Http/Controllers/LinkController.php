@@ -8,24 +8,36 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class LinkController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Link::where('user_id', auth()->id());
+        $query = Link::query();
 
         if ($request->has('search')) {
-            $query->where('code', 'like', '%' . $request->search . '%');
+            $searchTerms = explode("\n", $request->input('search'));
+            $searchTerms = array_map('trim', $searchTerms);
+            $searchTerms = array_filter($searchTerms);
+
+            if (!empty($searchTerms)) {
+                $query->where(function ($q) use ($searchTerms) {
+                    foreach ($searchTerms as $term) {
+                        $q->orWhere('code', 'like', "%{$term}%");
+                    }
+                });
+            }
         }
 
-        $links = $query->latest()->paginate(20);
+        $links = $query->orderByDesc("id")->paginate(20);  // Adjust the number as needed
 
         return view('links.index', compact('links'));
     }
 
     public function generate(Request $request)
     {
+
         $request->validate([
             'count' => 'required|integer|min:1',
         ]);
@@ -35,7 +47,7 @@ class LinkController extends Controller
 
         for ($i = 0; $i < $count; $i++) {
             do {
-                $code = $this->generateLetterCode(6);
+                $code = $this->generateLetterCode(8);
             } while (Link::where('code', $code)->exists());
 
             $link = Link::create([
@@ -123,5 +135,30 @@ class LinkController extends Controller
             ->paginate(10);
 
         return view('csv.index', compact('csvExports'));
+    }
+
+
+    public function generateqr($code)
+    {
+        $url = route('qr.redirect', ['code' => $code]);
+        $qrCode = QrCode::size(200)->generate($url);
+
+        return response($qrCode)->header('Content-Type', 'image/svg+xml');
+    }
+
+    public function bulkUpdate(Request $request)
+    {
+
+        $request->validate([
+            'selected' => 'required|array',
+            'bulk_redirect_url' => 'required|url'
+        ]);
+
+
+        $updatedCount = Link::whereIn('id', $request->selected)
+            ->update(['redirect_url' => $request->bulk_redirect_url]);
+
+        return redirect()->route('links.index')
+            ->with('success', "{$updatedCount} links have been updated.");
     }
 }
