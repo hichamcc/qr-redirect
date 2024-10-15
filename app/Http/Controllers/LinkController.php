@@ -47,7 +47,7 @@ class LinkController extends Controller
 
         for ($i = 0; $i < $count; $i++) {
             do {
-                $code = $this->generateLetterCode(8);
+                $code = $this->generateLetterCode(6);
             } while (Link::where('code', $code)->exists());
 
             $link = Link::create([
