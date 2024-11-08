@@ -30,6 +30,11 @@ class LinkController extends Controller
             }
         }
 
+            // Filter by redirect_url
+            if ($request->filled('redirect_url')) {
+                $query->where('redirect_url', 'like', '%' . $request->input('redirect_url') . '%');
+            }
+
         $links = $query->orderByDesc("id")->paginate(20);  // Adjust the number as needed
 
         return view('links.index', compact('links'));

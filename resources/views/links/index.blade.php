@@ -13,22 +13,29 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
                     <div class="flex justify-between mb-4">
-                        <form action="{{ route('links.index') }}" method="GET" class="flex flex-col gap-2 items-start">
-                            <textarea
-                                name="search"
-                                id="search"
-                                placeholder="Enter codes to search (one per line)"
-                                class="w-full h-24 border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
-                            ></textarea>
-                            <div class="flex gap-2">
+                        <form action="{{ route('links.index') }}" method="GET" class="flex  gap-2 items-start">
+                           
+                        <textarea
+                                    name="search"
+                                    id="search"
+                                    placeholder="Enter codes to search (one per line)"
+                                    class="w-full h-24 border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
+                                ></textarea>
+
+                                <input type="text" name="redirect_url" id="redirect_url" placeholder="url" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 " >
+
+                       
+                            
                                 <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
                                     Search
                                 </button>
                                 <button type="button" onclick="clearSearch()" class="text-gray-700 bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 focus:outline-none">
                                     Clear
                                 </button>
-                            </div>
+                       
                         </form>
+
+
                         <div>
                             <button type="button" data-modal-target="generateLinksModal" data-modal-toggle="generateLinksModal" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
                                 Generate Links
@@ -218,6 +225,8 @@
 
         // Populate search input if there's a previous search query
         $('#search').val({!! json_encode(request()->search) !!});
+        $('#redirect_url').val({!! json_encode(request()->redirect_url) !!});
+
     });
 
 
@@ -388,6 +397,9 @@
 
     function clearSearch() {
         document.getElementById('search').value = '';
+        document.getElementById('redirect_url').value = '';
+
+        
     }
 
 </script>
