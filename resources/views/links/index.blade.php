@@ -22,7 +22,7 @@
                                     class="w-full h-24 border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
                                 ></textarea>
 
-                                <input type="text" name="redirect_url" id="redirect_url" placeholder="url" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 " >
+                                <input type="text" name="redirect_url" id="redirect_url2" placeholder="url" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 " >
 
                        
                             
@@ -225,7 +225,7 @@
 
         // Populate search input if there's a previous search query
         $('#search').val({!! json_encode(request()->search) !!});
-        $('#redirect_url').val({!! json_encode(request()->redirect_url) !!});
+        $('#redirect_url2').val({!! json_encode(request()->redirect_url) !!});
 
     });
 
